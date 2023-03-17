@@ -1,13 +1,22 @@
-GitHub Gist Explorer
-GitHub Gist Explorer is a React web application that allows users to search for a GitHub user and see their public Gists. The application shows basic information about the Gists, including the description, creation date, language, and forks. For each Gist, the user can also see a list of the users who have forked it and click on a fork to see the syntax-highlighted code.
+GitHub User Gists
+This is a React application that allows you to search for a GitHub user and view their public Gists.
 
-Usage
+The app uses the GitHub API to fetch the user's profile and Gists. It also fetches the forks for each Gist and displays them in a list.
+
+Getting started
 Clone the repository
-Install dependencies by running npm install in the project directory
+Install dependencies with npm install
+Create a .env file in the root of the project and add your GitHub API token like so: REACT_APP_GITHUB_TOKEN=your_token_here
 Start the development server with npm start
-Open http://localhost:3000 in your web browser
+Features
+Search for a GitHub user by username
+View the user's profile information and bio
+View a list of the user's public Gists
+View the forks for each Gist
+Click on a fork to view the owner's profile information and bio
 Dependencies
-The project relies on the following dependencies:
-
 React
-Axios
+axios
+tailwindcss
+License
+This project is licensed under the MIT License.

@@ -5,102 +5,8 @@ function App() {
   const [username, setUsername] = useState('');
   const [user, setUser] = useState(null);
   const [gists, setGists] = useState([]);
-  const [selectedGist, setSelectedGist] = useState(null);
+  const [setSelectedGist] = useState(null);
 
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get(`https://api.github.com/users/${username}`, {
-        headers: {
-          Authorization: `Bearer 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`
-        }
-      });
-      setUser(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-const fetchGists = async () => {
-  try {
-    const response = await axios.get(`https://api.github.com/users/${username}/gists`, {
-      headers: {
-        Authorization: `Bearer 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`
-      }
-    });
-
-    const gistsWithForks = await Promise.all(
-      response.data.map(async (gist) => {
-        const forksResponse = await axios.get(gist.forks_url, {
-          headers: {
-            Authorization: `Bearer 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`
-          }
-        });
-
-        const forks = await Promise.all(
-          forksResponse.data.map(async (fork) => {
-            const ownerResponse = await axios.get(fork.owner.url, {
-              headers: {
-                Authorization: `Bearer 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`
-              }
-            });
-            const owner = ownerResponse.data;
-            return { username: owner.login, avatar_url: owner.avatar_url };
-          })
-        );
-
-        const files = Object.values(gist.files);
-        const language = files.length > 0 ? files[0].language : null;
-
-        return { ...gist, forks, language };
-      })
-    );
-
-    setGists(gistsWithForks);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-function CodeViewer({ gist, fork }) {
-  const [content, setContent] = useState('');
-
-  useEffect(() => {
-    const fetchContent = async () => {
-      const response = await axios.get(fork.url, {
-        headers: {
-          Authorization: `Bearer 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`
-        }
-      });
-
-      setContent(response.data);
-    };
-
-    if (fork) {
-      fetchContent();
-    }
-  }, [fork]);
-
-  return (
-    <pre className="bg-gray-50 p-4 rounded-md">
-      <code className={`language-${Object.values(gist.files)[0].language?.toLowerCase()}`}>
-        {content}
-      </code>
-    </pre>
-  );
-}
-
-
-function isURLSameOrigin(requestURL) {
-  const parsed = new URL(requestURL);
-  return (
-    parsed.origin === window.location.origin ||
-    !parsed.origin || // added to check for undefined values
-    !parsed.protocol || // added to check for undefined values
-    !parsed.host || // added to check for undefined values
-    !parsed.hostname || // added to check for undefined values
-    !parsed.port // added to check for undefined values
-  );
-}
 
 function getLanguageColor(language) {
   const colors = {
@@ -132,18 +38,73 @@ function getLanguageColor(language) {
     setSelectedGist(gist);
   };
   
-  const [selectedFork, setSelectedFork] = useState(null);
+  const [setSelectedFork] = useState(null);
 
   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`https://api.github.com/users/${username}`, {
+          headers: {
+            Authorization: `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`
+          }
+        });
+        setUser(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    const fetchGists = async () => {
+      try {
+        const response = await axios.get(`https://api.github.com/users/${username}/gists`, {
+          headers: {
+            Authorization: `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`
+          }
+        });
+  
+        const gistsWithForks = await Promise.all(
+          response.data.map(async (gist) => {
+            const forksResponse = await axios.get(gist.forks_url, {
+              headers: {
+                Authorization: `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`
+              }
+            });
+  
+            const forks = await Promise.all(
+              forksResponse.data.map(async (fork) => {
+                const ownerResponse = await axios.get(fork.owner.url, {
+                  headers: {
+                    Authorization: `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`
+                  }
+                });
+                const owner = ownerResponse.data;
+                return { username: owner.login, avatar_url: owner.avatar_url };
+              })
+            );
+  
+            const files = Object.values(gist.files);
+            const language = files.length > 0 ? files[0].language : null;
+  
+            return { ...gist, forks, language };
+          })
+        );
+  
+        setGists(gistsWithForks);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
     if (username) {
       const fetchData = async () => {
         await fetchUser();
         await fetchGists();
       };
-
+  
       fetchData();
     }
   }, [username]);
+  
 
 
   return (
@@ -201,29 +162,29 @@ function getLanguageColor(language) {
   )}
 </div>
 
-			   <div className="text-sm text-gray-500 mt-4">
-			   <div className="grid grid-cols-4 auto-cols-max gap-2">
-				Forked by:{' '}
-				{gist.forks.map((fork) => (
-					<span key={fork.username} onClick={() => setSelectedFork(fork)}>
-					  <img
-						src={fork.avatar_url}
-						alt={fork.username}
-						className="rounded-full mr-1 w-6 h-6 cursor-pointer"
-					  />
-					  {fork.username}
-					</span>
-				))}
-				</div>
-			  </div>
+{gist.forks.length > 0 && (
+  <div className="text-sm text-gray-500 mt-4">
+    <div className="grid grid-cols-4 auto-cols-max gap-2">
+      Forked by:{' '}
+      {gist.forks.map((fork) => (
+        <span key={fork.username} onClick={() => setSelectedFork(fork)}>
+          <img
+            src={fork.avatar_url}
+            alt={fork.username}
+            className="rounded-full mr-1 w-6 h-6 cursor-pointer"
+          />
+          {fork.username}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
 			</div>
 		  </li>
         ))}
       </ul>
-	  {selectedFork && <CodeViewer gist={selectedGist} fork={selectedFork} />}
     </div>
   );
 }
 
 export default App;
-

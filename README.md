@@ -1,4 +1,4 @@
-//GitHub User Gists
+GitHub User Gists
 This is a React application that allows you to search for a GitHub user and view their public Gists.
 
 The app uses the GitHub API to fetch the user's profile and Gists. It also fetches the forks for each Gist and displays them in a list.
